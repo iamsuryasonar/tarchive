@@ -1,0 +1,65 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body {
+    position: relative;
+    width: 24rem;
+    background-color: #1f1f1f;
+    color: white;
+}
+
+h1 {
+    padding-bottom: 0.6rem;
+}
+
+.button_group {
+    position: sticky;
+    top: 0rem;
+    padding: 0.6rem 1rem;
+    display: flex;
+    justify-content: end;
+    gap: 1rem;
+    background-color: #1f1f1f;
+}
+
+.button {
+    padding: 0.3rem 1.2rem;
+    color: white;
+    background-color: #a043d6;
+    border: 1px solid rgb(165, 165, 165);
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.button:hover {
+    background-color: #8036ac;
+}
+
+.path_name {
+    overflow: hidden;
+    text-wrap: wrap;
+    text-overflow: ellipsis;
+}
+
+.tabs_list {
+    padding: 1rem;
+    padding-top: 0.4rem;
+    list-style-type: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+li {
+    padding: 0.5rem;
+    background: #141414;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+li:hover {
+    background: #5858589d;
+}
