@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <title>Bucket of tabs</title>
+    <title>Limo</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="pop_up.css" />
@@ -10,8 +10,14 @@
 
 <body>
     <div class="button_group">
-        <button class="button" id="add_to_bucket">Add</button>
-        <button class="button" id="view_buckets">View</button>
+        <div class="select_all">
+            <input type="checkbox" id="select_all" name="select all" />
+            <label for="select_all">select all</label>
+        </div>
+        <div>
+            <button class="button" id="add_to_bucket">Add</button>
+            <button class="button" id="view_buckets">View</button>
+        </div>
     </div>
     <ul class="tabs_list" id="tabs"></ul>
 

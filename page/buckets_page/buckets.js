@@ -7,6 +7,23 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             const prevBuckets = result.allBuckets || [];
 
+            if (prevBuckets.length === 0) {
+
+                const h1 = document.querySelector("h1");
+
+                const info = document.createElement("p");
+                info.style.fontWeight = 'bold';
+                info.style.fontSize = '1.4rem';
+                info.style.marginTop = '4rem';
+                info.style.placeSelf = 'center';
+                info.textContent = 'You have no buckets, yet!';
+
+                h1.insertAdjacentElement("afterend", info);
+                return;
+            }
+
+            prevBuckets.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+
             prevBuckets.forEach(bucket => {
                 renderBucketCard(bucket);
             });
