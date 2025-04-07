@@ -1,7 +1,7 @@
-# Limo Chrome Extension
+# Tarchive Chrome Extension
 
 ## Overview
-Limo is a Google Chrome extension that allows users to **group tabs(bucket)** and **save them** in local storage for easy access later. Users can create, manage, and reopen saved tab groups(buckets) with a single click.
+Tarchive is a Google Chrome extension that allows users to **group tabs(bucket)** and **save them** in local storage for easy access later. Users can create, manage, and reopen saved tab groups(buckets) with a single click.
 
 ## Features
 - **Group Tabs(bucket)**: Select multiple tabs and save them as a group.
@@ -18,7 +18,7 @@ Limo is a Google Chrome extension that allows users to **group tabs(bucket)** an
 5. The extension is now installed!
 
 ## How to Use
-1. Click the **Limo** extension icon.
+1. Click the **Tarchive** extension icon.
 2. Click **"Add"** to create a new tab group(bucket).
 3. View saved groups in the extension popup.
 4. Click **"Open Group"** to restore saved tabs.
@@ -26,15 +26,15 @@ Limo is a Google Chrome extension that allows users to **group tabs(bucket)** an
 
 ## File Structure
 ```
-limo
+Tarchive
   │── manifest.json               # Extension configuration
   |── images
         |── logo.png
   |── pages
-        │── buckets_page          # bucket page
-              │── buckets.js       
-              │── buckets.css             
-              │── buckets.html            
+        │── dashboard             # dashboard page
+              │── dashboard.js       
+              │── dashboard.css             
+              │── dashboard.html            
   |── pop_up                      # pop_up ui and business logic
         │── popup.html   
         │── popup.js  
@@ -46,8 +46,8 @@ limo
 ## Manifest.json Configuration (Manifest V3)
 ```json
 {
-    "name": "limo",
-    "description": "store tabs in buckets",
+    "name": "Tarchive",
+    "description": "archive tabs",
     "version": "1.0",
     "manifest_version": 3,
     "action": {
@@ -57,8 +57,7 @@ limo
     "content_scripts": [
         {
             "matches": [
-                "http://*/*",
-                "https://*/*"
+               "<all_urls>"
             ],
             "js": [
                 "scripts/content.js"
@@ -69,8 +68,7 @@ limo
         "service_worker": "scripts/background.js"
     },
     "host_permissions": [
-        "http://*/*",
-        "https://*/*"
+        "<all_urls>"
     ],
     "permissions": [
         "tabs",

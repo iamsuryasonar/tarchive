@@ -1,6 +1,6 @@
 {
-    "name": "limo",
-    "description": "store tabs in buckets",
+    "name": "Tarchive",
+    "description": "archive tabs",
     "version": "1.0",
     "manifest_version": 3,
     "action": {
@@ -10,8 +10,7 @@
     "content_scripts": [
         {
             "matches": [
-                "http://*/*",
-                "https://*/*"
+                "<all_urls>"
             ],
             "js": [
                 "scripts/content.js"
@@ -22,8 +21,7 @@
         "service_worker": "scripts/background.js"
     },
     "host_permissions": [
-        "http://*/*",
-        "https://*/*"
+        "<all_urls>"
     ],
     "permissions": [
         "tabs",

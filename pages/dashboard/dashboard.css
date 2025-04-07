@@ -16,6 +16,7 @@ h1 {
 }
 
 .bucket_name {
+    margin: 4px;
     font-size: 2rem;
     font-weight: bold;
 }
@@ -63,4 +64,11 @@ li {
 
 .button:hover {
     color: #8036ac;
+}
+
+.info {
+    font-weight: bold;
+    font-size: 1.4rem;
+    margin-top: 4rem;
+    place-self: center;
 }
