@@ -37,7 +37,10 @@ export async function addTabsToBucket(tabs) {
 export async function deleteBucket(id) {
     let result = await chrome.storage.local.get(["allBuckets"]);
     let prevBuckets = result.allBuckets || [];
-    prevBuckets = prevBuckets.filter(bucket => bucket.id !== id);
+    prevBuckets = prevBuckets.filter(bucket => {
+        if (bucket.id === id && bucket.isLocked === false) return false;
+        return true;
+    });
     await chrome.storage.local.set({ allBuckets: prevBuckets });
 }
 
@@ -47,6 +50,19 @@ export async function renameBucketName(id, name) {
     prevBuckets = prevBuckets.map(bucket => {
         if (bucket.id === id) {
             bucket.name = name;
+        }
+
+        return bucket;
+    });
+    await chrome.storage.local.set({ allBuckets: prevBuckets });
+}
+
+export async function toggleBucketLock(id) {
+    let result = await chrome.storage.local.get(["allBuckets"]);
+    let prevBuckets = result.allBuckets || [];
+    prevBuckets = prevBuckets.map(bucket => {
+        if (bucket.id === id) {
+            bucket.isLocked = !bucket?.isLocked;
         }
 
         return bucket;

@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
-import { getBucketsFromLocal, deleteBucket, openTabs, renameBucketName, createReloadDashboard } from '../../services/index.js';
+import { getBucketsFromLocal, deleteBucket, openTabs, renameBucketName, createReloadDashboard, toggleBucketLock } from '../../services/index.js';
 import useOutsideClick from '../../assets/hooks/useOusideClick.js';
+import { FaLock, FaLockOpen } from "react-icons/fa6";
 
 function App() {
   const [buckets, setBuckets] = useState([]);
@@ -37,6 +38,11 @@ function App() {
     createReloadDashboard();
   }
 
+  function bucketLockHandler(id) {
+    toggleBucketLock(id)
+    createReloadDashboard();
+  }
+
   return (
     <div className='p-4 flex flex-col gap-4 text-base'>
       <h1 className='font-bold text-2xl'>Tarchive</h1>
@@ -44,7 +50,7 @@ function App() {
         (buckets.length === 0) && <p className='text-xl'>You have no buckets, yet!</p>
       }
       {
-        buckets.map(({ id, name, tabs }) => {
+        buckets.map(({ id, name, isLocked, tabs }) => {
           return <div key={id} className='flex flex-col gap-2'>
             <div className='flex flex-row items-center gap-6'>
               {!(activeInput === id) && <p onClick={() => setActiveInput(id)} className='font-bold'>{name}</p>}
@@ -54,6 +60,9 @@ function App() {
               </div>
               }
               <div className='flex gap-2'>
+                <button className='cursor-pointer p-2 bg-slate-200 rounded-full' onClick={(e) => bucketLockHandler(id)}>
+                  {isLocked ? <FaLock /> : <FaLockOpen />}
+                </button>
                 <button className='bg-slate-200 rounded-full py-1 px-4 cursor-pointer' onClick={() => onOpenTabsHandler(tabs)}>open</button>
                 <button className='bg-red-200 rounded-full py-1 px-4 cursor-pointer' onClick={() => deleteBucketHandler(id)}>delete</button>
               </div>
