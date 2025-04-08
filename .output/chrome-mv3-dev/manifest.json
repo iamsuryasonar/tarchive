@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "Tarchive",
+  "description": "archive tabs",
+  "version": "1.0",
+  "icons": {
+    "16": "icon/16.png",
+    "32": "icon/32.png",
+    "48": "icon/48.png",
+    "96": "icon/96.png",
+    "128": "icon/128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon/logo.png",
+    "default_title": "Tarchive"
+  },
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*",
+    "*://*.google.com/*",
+    "http://localhost/*"
+  ],
+  "permissions": [
+    "tabs",
+    "storage",
+    "scripting"
+  ],
+  "commands": {
+    "wxt:reload-extension": {
+      "description": "Reload the extension during development",
+      "suggested_key": {
+        "default": "Alt+R"
+      }
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval' http://localhost:3000; object-src 'self';",
+    "sandbox": "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:3000; sandbox allow-scripts allow-forms allow-popups allow-modals; child-src 'self';"
+  }
+}
