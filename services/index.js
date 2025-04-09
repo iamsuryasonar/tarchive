@@ -38,7 +38,7 @@ export async function deleteBucket(id) {
     let result = await chrome.storage.local.get(["allBuckets"]);
     let prevBuckets = result.allBuckets || [];
     prevBuckets = prevBuckets.filter(bucket => {
-        if (bucket.id === id && bucket.isLocked === false) return false;
+        if (bucket.id === id && !bucket?.isLocked) return false;
         return true;
     });
     await chrome.storage.local.set({ allBuckets: prevBuckets });
@@ -103,9 +103,29 @@ export async function openDashboard() {
     }
 }
 
+export function openCurrentTab(id) {
+    chrome.tabs.update(id, { active: true });
+}
+
 export function openTabs(tabs) {
     tabs.forEach((tab) => {
         chrome.tabs.create({ url: tab.url });
     })
 }
 
+export async function openTabGroup(bucket) {
+    Promise.all(
+        bucket.tabs.map(tab => new Promise((resolve) => {
+            chrome.tabs.create({ url: tab.url }, resolve);
+        }))
+    ).then((tabs) => {
+        const tabIds = tabs.map(tab => tab.id);
+
+        chrome.tabs.group({ tabIds: tabIds }, (groupId) => {
+            chrome.tabGroups.update(groupId, {
+                title: bucket.name,
+                color: bucket?.color ? bucket.color : 'blue',
+            });
+        });
+    });
+}

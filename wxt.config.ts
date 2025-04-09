@@ -19,10 +19,12 @@ export default defineConfig({
     },
     host_permissions: [
       "http://*/*",
-      "https://*/*"
+      "https://*/*",
+      "<all_urls>"
     ],
     permissions: [
       "tabs",
+      "tabGroups",
       "storage"
     ],
   },

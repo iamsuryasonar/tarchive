@@ -18,11 +18,13 @@
   "host_permissions": [
     "http://*/*",
     "https://*/*",
+    "<all_urls>",
     "*://*.google.com/*",
     "http://localhost/*"
   ],
   "permissions": [
     "tabs",
+    "tabGroups",
     "storage",
     "scripting"
   ],

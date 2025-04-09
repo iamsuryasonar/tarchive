@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { addTabsToBucket, createReloadDashboard, getOpenedTabs, openDashboard } from '../../services/index.js';
+import { addTabsToBucket, createReloadDashboard, getOpenedTabs, openDashboard, openCurrentTab } from '../../services/index.js';
 
 function App() {
 
@@ -84,10 +84,11 @@ function App() {
     </div>
     <ul className='flex flex-col gap-1'>
       {
-        tabs.map((tab) => {
-          return <div key={tab.id} className='flex items-center gap-2'>
-            <input type="checkbox" onChange={(e) => onTabSelectHandler(e, tab.id)} checked={tab.checked} />
-            <a className='cursor-pointer underline truncate' key={tab.id} href={tab.url}>{tab.title}</a>
+        tabs.map(({ id, title, checked, favIconUrl }) => {
+          return <div key={id} className='flex items-center gap-2'>
+            <input type="checkbox" onChange={(e) => onTabSelectHandler(e, id)} checked={checked} />
+            <img src={favIconUrl} width={20} height={20} className='' />
+            <button className='cursor-pointer underline truncate' onClick={() => openCurrentTab(id)}>{title}</button>
           </div>
         })
       }
