@@ -60,14 +60,16 @@ export async function renameBucketName(id, name) {
 export async function toggleBucketLock(id) {
     let result = await chrome.storage.local.get(["allBuckets"]);
     let prevBuckets = result.allBuckets || [];
-    prevBuckets = prevBuckets.map(bucket => {
+
+    let newBuckets = prevBuckets.map(bucket => {
         if (bucket.id === id) {
             bucket.isLocked = !bucket?.isLocked;
         }
 
         return bucket;
     });
-    await chrome.storage.local.set({ allBuckets: prevBuckets });
+
+    await chrome.storage.local.set({ allBuckets: newBuckets });
 }
 
 export async function getBucketsFromLocal() {
