@@ -1,11 +1,15 @@
+import { browser } from 'wxt/browser';
+
 export async function getOpenedTabs() {
-    let tabs = await chrome.tabs.query({});
+    let IS_GET_PINNED = false; // todo - get this from local storage, make it configurable in settings
+    let tabs = await browser.tabs.query({ pinned: IS_GET_PINNED });
     let dashboardTab = await getDashboardTab();
     let filteredTabs = tabs.filter((tab) => tab.id !== dashboardTab?.id);
     return filteredTabs;
 }
 
 export async function addTabsToBucket(tabs) {
+    const IS_DUPLICATE_ALLOWED = false; // todo - get this from local storage, make it configurable in settings
     /*
         1. generate unique id
         2. create bucket object
@@ -14,8 +18,22 @@ export async function addTabsToBucket(tabs) {
         5. push the bucket to buckets
         6. reload or open buckets page
     */
-
     if (tabs.length === 0) return;
+
+    let filteredTabs = tabs;
+
+    if (!IS_DUPLICATE_ALLOWED) {
+        let set = new Set();
+
+        filteredTabs = tabs.filter((tab) => {
+            if (set.has(tab.url)) {
+                return false;
+            } else {
+                set.add(tab.url);
+                return true;
+            }
+        })
+    }
 
     let randomId = crypto.randomUUID();
 
@@ -23,29 +41,29 @@ export async function addTabsToBucket(tabs) {
         id: randomId,
         name: randomId.slice(0, 8),
         createdAt: new Date().toISOString(),
-        tabs: tabs,
+        tabs: filteredTabs,
     }
 
-    let result = await chrome.storage.local.get(["allBuckets"]);
+    let result = await browser.storage.local.get(["allBuckets"]);
     let prevBuckets = result.allBuckets || [];
 
     prevBuckets.push(bucket);
 
-    await chrome.storage.local.set({ allBuckets: prevBuckets });
+    await browser.storage.local.set({ allBuckets: prevBuckets });
 }
 
 export async function deleteBucket(id) {
-    let result = await chrome.storage.local.get(["allBuckets"]);
+    let result = await browser.storage.local.get(["allBuckets"]);
     let prevBuckets = result.allBuckets || [];
     prevBuckets = prevBuckets.filter(bucket => {
         if (bucket.id === id && !bucket?.isLocked) return false;
         return true;
     });
-    await chrome.storage.local.set({ allBuckets: prevBuckets });
+    await browser.storage.local.set({ allBuckets: prevBuckets });
 }
 
 export async function renameBucketName(id, name) {
-    let result = await chrome.storage.local.get(["allBuckets"]);
+    let result = await browser.storage.local.get(["allBuckets"]);
     let prevBuckets = result.allBuckets || [];
     prevBuckets = prevBuckets.map(bucket => {
         if (bucket.id === id) {
@@ -54,11 +72,11 @@ export async function renameBucketName(id, name) {
 
         return bucket;
     });
-    await chrome.storage.local.set({ allBuckets: prevBuckets });
+    await browser.storage.local.set({ allBuckets: prevBuckets });
 }
 
 export async function toggleBucketLock(id) {
-    let result = await chrome.storage.local.get(["allBuckets"]);
+    let result = await browser.storage.local.get(["allBuckets"]);
     let prevBuckets = result.allBuckets || [];
 
     let newBuckets = prevBuckets.map(bucket => {
@@ -69,62 +87,62 @@ export async function toggleBucketLock(id) {
         return bucket;
     });
 
-    await chrome.storage.local.set({ allBuckets: newBuckets });
+    await browser.storage.local.set({ allBuckets: newBuckets });
 }
 
 export async function getBucketsFromLocal() {
-    let result = await chrome.storage.local.get(["allBuckets"]);
+    let result = await browser.storage.local.get(["allBuckets"]);
     const prevBuckets = result.allBuckets || [];
     prevBuckets.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     return prevBuckets;
 }
 
 export async function getDashboardTab() {
-    let dashboardTabs = await chrome.tabs.query({ url: chrome.runtime.getURL("dashboard.html") });
+    let dashboardTabs = await browser.tabs.query({ url: browser.runtime.getURL("dashboard.html") });
     return dashboardTabs[0];
 }
 
 export async function createReloadDashboard() {
-    let tabs = await chrome.tabs.query({ url: chrome.runtime.getURL("dashboard.html") });
+    let tabs = await browser.tabs.query({ url: browser.runtime.getURL("dashboard.html") });
 
     if (tabs.length === 0) {
-        chrome.tabs.create({ url: chrome.runtime.getURL("dashboard.html"), index: 0, pinned: true });
+        browser.tabs.create({ url: browser.runtime.getURL("dashboard.html"), index: 0, pinned: true });
     } else {
-        chrome.tabs.reload(tabs[0].id);
-        chrome.tabs.update(tabs[0].id, { active: true });
+        browser.tabs.reload(tabs[0].id);
+        browser.tabs.update(tabs[0].id, { active: true });
     }
 }
 
 export async function openDashboard() {
-    let tabs = await chrome.tabs.query({ url: chrome.runtime.getURL("dashboard.html") });
+    let tabs = await browser.tabs.query({ url: browser.runtime.getURL("dashboard.html") });
 
     if (tabs.length === 0) {
-        chrome.tabs.create({ url: chrome.runtime.getURL("dashboard.html"), index: 0, pinned: true });
+        browser.tabs.create({ url: browser.runtime.getURL("dashboard.html"), index: 0, pinned: true });
     } else {
-        chrome.tabs.update(tabs[0].id, { active: true });
+        browser.tabs.update(tabs[0].id, { active: true });
     }
 }
 
 export function openCurrentTab(id) {
-    chrome.tabs.update(id, { active: true });
+    browser.tabs.update(id, { active: true });
 }
 
 export function openTabs(tabs) {
     tabs.forEach((tab) => {
-        chrome.tabs.create({ url: tab.url });
+        browser.tabs.create({ url: tab.url });
     })
 }
 
 export async function openTabGroup(bucket) {
     Promise.all(
         bucket.tabs.map(tab => new Promise((resolve) => {
-            chrome.tabs.create({ url: tab.url }, resolve);
+            browser.tabs.create({ url: tab.url }, resolve);
         }))
     ).then((tabs) => {
         const tabIds = tabs.map(tab => tab.id);
 
-        chrome.tabs.group({ tabIds: tabIds }, (groupId) => {
-            chrome.tabGroups.update(groupId, {
+        browser.tabs.group({ tabIds: tabIds }, (groupId) => {
+            browser.tabGroups.update(groupId, {
                 title: bucket.name,
                 color: bucket?.color ? bucket.color : 'blue',
             });

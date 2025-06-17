@@ -29,6 +29,18 @@
     "scripting"
   ],
   "commands": {
+    "add-tabs": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+A"
+      },
+      "description": "Add current tabs to bucket"
+    },
+    "view-buckets": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+V"
+      },
+      "description": "View Buckets"
+    },
     "wxt:reload-extension": {
       "description": "Reload the extension during development",
       "suggested_key": {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { addTabsToBucket, createReloadDashboard, getOpenedTabs, openDashboard, openCurrentTab } from '../../services/index.js';
-import { IoAddCircleOutline } from 'react-icons/io5';
-import { FaEye } from 'react-icons/fa';
+import { IoAddCircleOutline, IoEyeOutline } from 'react-icons/io5';
+import { getEmptyPopUpFallBackMessage } from '../../utils/constants';
 
 function PopUp() {
 
@@ -16,6 +16,11 @@ function PopUp() {
                 tab.checked = true;
                 return tab;
             });
+
+            // remove new tab from list of opened tabs
+            // newTabs = newTabs.filter((tab) => {
+            //     if (tab.title.toLowerCase() !== "new tab") return tab;
+            // });
 
             setTabs(newTabs);
         })();
@@ -60,28 +65,36 @@ function PopUp() {
             if (tab.checked !== false && tab.title !== "about:blank") return tab;
         });
 
+        if (filteredTabs.length === 0) return; // return if no tabs are selected
+
         await addTabsToBucket(filteredTabs);
-        window.close();
+        // window.close(); //close popup window
         createReloadDashboard();
     }
 
     async function openDashboardHandler() {
         await openDashboard();
-        window.close();
+        window.close(); //close popup window
     }
+
+    const fallbackMessage = tabs.length === 0 ? getEmptyPopUpFallBackMessage() : '';
 
     return <div className='w-[400px] max-h-[400px] overflow-y-auto p-3 pl-0 flex flex-col gap-2 text-base bg-[#222222] text-white'>
         <div className='pl-3 flex items-center justify-between gap-2'>
             <div className='flex items-center gap-2'>
-                <input
-                    className='accent-blue-200 bg-[#2a2e3b] border border-[#3a3f4f] focus:ring-1 focus:ring-blue-300 rounded cursor-pointer'
-                    type="checkbox"
-                    name="select all"
-                    id="select_all"
-                    onChange={onAllSelectHandler}
-                    checked={selectAllInput}
-                />
-                <label className="cursor-pointer" htmlFor="select_all">Select all</label>
+                {
+                    tabs.length > 1 && <>
+                        <input
+                            className='accent-blue-200 bg-[#2a2e3b] border border-[#3a3f4f] focus:ring-1 focus:ring-blue-300 rounded cursor-pointer'
+                            type="checkbox"
+                            name="select all"
+                            id="select_all"
+                            onChange={onAllSelectHandler}
+                            checked={selectAllInput}
+                        />
+                        <label className="cursor-pointer" htmlFor="select_all">Select all</label>
+                    </>
+                }
             </div>
             <div className='flex gap-2'>
                 <button className='py-1 px-3 flex gap-1 items-center rounded-full cursor-pointer bg-[#2a2e3b] hover:bg-[#364155] text-blue-200' onClick={addTabsToBucketHandler}>
@@ -89,26 +102,33 @@ function PopUp() {
                     <p>add</p>
                 </button>
                 <button className='py-1 px-3 flex gap-1 items-center rounded-full cursor-pointer bg-[#2a2e3b] hover:bg-[#364155] text-blue-200' onClick={openDashboardHandler}>
-                    <FaEye />
+                    <IoEyeOutline />
                     <p>view</p>
                 </button>
             </div>
         </div>
-        <div className='bg-slate-500 h-[1px] ml-2'></div>
-        <ul className='flex flex-col gap-2'>
-            {
-                tabs.map(({ id, title, checked, favIconUrl }) => {
-                    return <div key={id} className='w-full px-3 py-1 flex items-center gap-2 bg-[#2a2e3b] rounded-r-full cursor-pointer group'>
-                        <input className='px-2 accent-blue-200 bg-[#2a2e3b] border border-[#3a3f4f] focus:ring-1 focus:ring-blue-300 rounded cursor-pointer' type="checkbox" onChange={(e) => onTabSelectHandler(e, id)} checked={checked} />
-                        <div className='bg-[#6e7386] w-[2px] h-4 rounded-full shrink-0'></div>
-                        <div className='grid grid-flow-col gap-1' onClick={() => openCurrentTab(id)}>
-                            <img src={favIconUrl} width={20} height={20} className='' />
-                            <button className='truncate text-gray-300 group-hover:text-blue-200 cursor-pointer'>{title}</button>
-                        </div>
-                    </div>
-                })
-            }
-        </ul>
-    </div>
+        <div className='bg-white/[0.1] h-[1px] ml-2'></div>
+        {
+            tabs.length > 0 ?
+                <ul className='flex flex-col gap-2'>
+                    {
+                        tabs.map(({ id, title, checked, favIconUrl }) => {
+                            return <div key={id} className='w-full px-3 py-1 flex items-center gap-2 bg-[#262831] rounded-r-full cursor-pointer group'>
+                                <input className='px-2 accent-blue-200 bg-[#2a2e3b] border border-[#3a3f4f] focus:ring-1 focus:ring-blue-300 rounded cursor-pointer' type="checkbox" onChange={(e) => onTabSelectHandler(e, id)} checked={checked} />
+                                <div className='bg-[#6e7386] w-[2px] h-4 rounded-full shrink-0'></div>
+                                <div className='grid grid-flow-col gap-1' onClick={() => openCurrentTab(id)}>
+                                    <img src={favIconUrl} width={20} height={20} className='' />
+                                    <button className='truncate text-gray-300 group-hover:text-blue-200 cursor-pointer'>{title}</button>
+                                </div>
+                            </div>
+                        })
+                    }
+                </ul>
+                :
+                <div className='p-2'>
+                    <p>{fallbackMessage}</p>
+                </div>
+        }
+    </div >
 }
 export default PopUp;

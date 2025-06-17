@@ -1,15 +1,39 @@
+import { addTabsToBucket, getOpenedTabs, openDashboard } from "../services";
+import { browser } from 'wxt/browser';
+
 export default defineBackground(() => {
-  chrome.runtime.onInstalled.addListener(({ reason }) => {
+  browser.runtime.onInstalled.addListener(({ reason }) => {
     if (reason === 'install') {
-      chrome.tabs.create({ url: chrome.runtime.getURL("dashboard.html"), index: 0, pinned: true });
+      browser.tabs.create({ url: browser.runtime.getURL("dashboard.html"), index: 0, pinned: true });
     }
   });
 
-  chrome.runtime.onStartup.addListener(async () => {
-    let tabs = await chrome.tabs.query({ url: chrome.runtime.getURL("dashboard.html") });
+  browser.runtime.onStartup.addListener(async () => {
+    let tabs = await browser.tabs.query({ url: browser.runtime.getURL("dashboard.html") });
 
     if (tabs.length === 0) {
-      chrome.tabs.create({ url: chrome.runtime.getURL("dashboard.html"), index: 0, pinned: true });
+      browser.tabs.create({ url: browser.runtime.getURL("dashboard.html"), index: 0, pinned: true });
     }
   });
 });
+
+// if (import.meta.env.MODE !== 'development') {
+//   browser.commands.onCommand.addListener(async (command) => {
+//     if (command === "add-tabs") {
+//       let tabs = await getOpenedTabs();
+
+//       let filteredTabs = tabs.filter((tab) => {
+//         if (tab.title !== "about:blank") return tab;
+//       });
+
+//       if (filteredTabs.length === 0) return;
+
+//       await addTabsToBucket(filteredTabs);
+//     }
+
+//     if (command === "view-buckets") {
+//       await openDashboard();
+//     }
+//   });
+// }
+

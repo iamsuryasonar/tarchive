@@ -1,11 +1,11 @@
-import React, { useState, useContext, useRef } from 'react'
+import { useState, useContext, useRef } from 'react'
 import { IoOpenOutline } from "react-icons/io5";
-import { CiMenuFries } from "react-icons/ci";
 import { openTabs, renameBucketName } from '../../../services/index';
 import { BucketContext } from '../context/context';
 import useOutsideClick from '../../../hooks/useOutsideClick';
 import { IoMdClose } from 'react-icons/io';
 import OptionsMenu from './OptionsMenu';
+import { CgMenuRightAlt } from 'react-icons/cg';
 
 function BucketCard(props) {
     const {
@@ -58,21 +58,21 @@ function BucketCard(props) {
     }
 
     return (
-        <div key={bucket.id} className='flex flex-col gap-2 text-white'>
-            <div className='relative p-2 pl-4 flex flex-row items-center justify-between gap-6 bg-[#2a2e3b57] rounded-r-full'>
+        <div key={bucket.id} className='h-full flex flex-col gap-2 text-white'>
+            <div className='h-[44px] p-1 relative pl-4 flex items-center justify-between gap-6 bg-[#262831] rounded-r-full'>
                 {
-                    !(idOfSelectedBucket === bucket.id) && <p onClick={() => setIdOfSelectedBucket(bucket.id)} className='font-bold text-xl'>{bucket.name}</p>
+                    !(idOfSelectedBucket === bucket.id) && <p onClick={() => setIdOfSelectedBucket(bucket.id)} className='font-bold text-lg'>{bucket.name}</p>
                 }
                 {
-                    (idOfSelectedBucket === bucket.id) && <div ref={inputContainerRef} className='w-[220px] flex gap-1'>
+                    (idOfSelectedBucket === bucket.id) && <div ref={inputContainerRef} className='h-full w-[220px] flex items-stretch gap-1'>
                         <input
                             id="bucket_name"
-                            className='w-full px-4 py-[3px] border-1 border-black rounded-full'
+                            className='w-full h-full px-4 border-1 border-white/[0.2] hover:border-white rounded-full'
                             type="text"
                             name="bucketName"
                             value={bucketInput === "" ? bucket.name : bucketInput}
                             onChange={(e) => setBucketInput(e.target.value)} onKeyDown={(e) => onEnterPressed(e, bucket.id)} />
-                        <button className='px-3 border-[1px] border-black rounded-full cursor-pointer' onClick={(e) => onBucketNameSubmit(bucket.id)}>save</button>
+                        <button className='h-full px-3 border-[1px] border-white/[0.2] hover:border-white rounded-full cursor-pointer' onClick={(e) => onBucketNameSubmit(bucket.id)}>save</button>
                     </div>
                 }
                 <div className='flex gap-2'>
@@ -82,17 +82,17 @@ function BucketCard(props) {
                         <p>open</p>
                     </button>
                     {
-                        (currentBucketMenu !== bucket.id) ? <button className='py-1 px-4 cursor-pointer flex gap-1 items-center text-blue-200 hover:text-blue-100'
+                        (currentBucketMenu !== bucket.id) ? <button className='py-1 px-4 cursor-pointer flex gap-1 items-center text-blue-200 hover:text-white'
                             onClick={() => toggleBucketMenu(bucket.id)}>
-                            <CiMenuFries size={20} />
+                            <CgMenuRightAlt size={20} />
                         </button> :
-                            <button className='py-1 px-4 cursor-pointer flex gap-1 items-center text-blue-200 hover:text-blue-100'
+                            <button className='py-1 px-4 cursor-pointer flex gap-1 items-center text-blue-200 hover:text-white '
                                 onClick={() => setCurrentBucketMenu('')}>
                                 <IoMdClose size={20} />
                             </button>
                     }
                 </div>
-                <OptionsMenu bucket={bucket} currentBucketMenu={currentBucketMenu} />
+                <OptionsMenu ref={bucketMenuRef} bucket={bucket} currentBucketMenu={currentBucketMenu} />
             </div>
             <div className='flex flex-col gap-2'>
                 <div className='px-4 flex flex-col gap-1'>

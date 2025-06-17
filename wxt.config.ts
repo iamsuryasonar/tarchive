@@ -27,6 +27,20 @@ export default defineConfig({
       "tabGroups",
       "storage"
     ],
+    commands: {
+      "add-tabs": {
+        suggested_key: {
+          default: "Ctrl+Shift+A"
+        },
+        description: 'Add current tabs to bucket',
+      },
+      "view-buckets": {
+        suggested_key: {
+          default: "Ctrl+Shift+V"
+        },
+        description: 'View Buckets',
+      },
+    }
   },
   modules: ['@wxt-dev/module-react'],
 });
