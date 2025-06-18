@@ -1,11 +1,13 @@
 import { useState, useContext, useRef } from 'react'
 import { IoOpenOutline } from "react-icons/io5";
-import { openTabs, renameBucketName } from '../../../services/index';
+import { renameBucketName, toggleTag } from '../../../db';
+import { openTabs } from '../../../services';
 import { BucketContext } from '../context/context';
 import useOutsideClick from '../../../hooks/useOutsideClick';
 import { IoMdClose } from 'react-icons/io';
 import OptionsMenu from './OptionsMenu';
 import { CgMenuRightAlt } from 'react-icons/cg';
+import { FaHeart, FaRegHeart } from 'react-icons/fa';
 
 function BucketCard(props) {
     const {
@@ -17,8 +19,7 @@ function BucketCard(props) {
     } = props;
 
     const [bucketInput, setBucketInput] = useState('');
-
-    const { getBuckets } = useContext(BucketContext);
+    const { getWorkspaces } = useContext(BucketContext);
     const inputContainerRef = useRef(null);
     const bucketMenuRef = useRef(null);
 
@@ -34,7 +35,12 @@ function BucketCard(props) {
     async function onBucketNameSubmit(id) {
         await renameBucketName(id, bucketInput);
         setIdOfSelectedBucket('');
-        getBuckets();
+        getWorkspaces();
+    }
+
+    async function toggleTagHandler(id, tag) {
+        await toggleTag(id, tag);
+        await getWorkspaces();
     }
 
     function onOpenTabsHandler(tabs) {
@@ -45,7 +51,7 @@ function BucketCard(props) {
         if (e.key === "Enter") {
             await renameBucketName(id, bucketInput);
             setIdOfSelectedBucket('');
-            getBuckets();
+            getWorkspaces();
         }
     }
 
@@ -59,7 +65,7 @@ function BucketCard(props) {
 
     return (
         <div key={bucket.id} className='h-full flex flex-col gap-2 text-white'>
-            <div className='h-[44px] p-1 relative pl-4 flex items-center justify-between gap-6 bg-[#262831] rounded-r-full'>
+            <div className='h-[44px] p-1 relative pl-4 flex items-center justify-between gap-6 bg-[#262831] rounded-full'>
                 {
                     !(idOfSelectedBucket === bucket.id) && <p onClick={() => setIdOfSelectedBucket(bucket.id)} className='font-bold text-lg'>{bucket.name}</p>
                 }
@@ -76,6 +82,12 @@ function BucketCard(props) {
                     </div>
                 }
                 <div className='flex gap-2'>
+                    <button className='bg-[#2a2e3b] hover:bg-[#364155] text-blue-200 rounded-full py-1 px-4 cursor-pointer flex gap-1 items-center'
+                        onClick={() => toggleTagHandler(bucket.id, 'Favorite')}>
+                        {
+                            bucket?.tag?.includes('Favorite') ? < FaHeart /> : <FaRegHeart />
+                        }
+                    </button>
                     <button className='bg-[#2a2e3b] hover:bg-[#364155] text-blue-200 rounded-full py-1 px-4 cursor-pointer flex gap-1 items-center'
                         onClick={() => onOpenTabsHandler(bucket.tabs)}>
                         <IoOpenOutline />

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { addTabsToBucket, createReloadDashboard, getOpenedTabs, openDashboard, openCurrentTab } from '../../services/index.js';
+import { addTabsToBucket } from '../../db';
+import { createReloadDashboard, getOpenedTabs, openDashboard, openCurrentTab } from '../../services'
 import { IoAddCircleOutline, IoEyeOutline } from 'react-icons/io5';
 import { getEmptyPopUpFallBackMessage } from '../../utils/constants';
 
@@ -16,11 +17,6 @@ function PopUp() {
                 tab.checked = true;
                 return tab;
             });
-
-            // remove new tab from list of opened tabs
-            // newTabs = newTabs.filter((tab) => {
-            //     if (tab.title.toLowerCase() !== "new tab") return tab;
-            // });
 
             setTabs(newTabs);
         })();
@@ -61,15 +57,12 @@ function PopUp() {
     }
 
     async function addTabsToBucketHandler() {
-        let filteredTabs = tabs.filter((tab) => {
-            if (tab.checked !== false && tab.title !== "about:blank") return tab;
-        });
+        await addTabsToBucket(tabs);
 
-        if (filteredTabs.length === 0) return; // return if no tabs are selected
+        const channel = new BroadcastChannel("tarchive_channel");
+        channel.postMessage({ type: "workspaces_updated" });
 
-        await addTabsToBucket(filteredTabs);
         // window.close(); //close popup window
-        createReloadDashboard();
     }
 
     async function openDashboardHandler() {

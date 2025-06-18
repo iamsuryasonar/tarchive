@@ -1,16 +1,17 @@
 import { useContext } from 'react'
 import { IoOpenOutline } from "react-icons/io5";
-import { deleteBucket, toggleBucketLock, openTabGroup } from '../../../services/index';
+import { deleteBucket, toggleBucketLock } from '../../../db';
+import { openTabGroup } from '../../../services';
 import { BucketContext } from '../context/context';
 import { CiLock, CiUnlock } from 'react-icons/ci';
 import { MdOutlineDelete } from 'react-icons/md';
 
 function OptionsMenu({ ref, bucket, currentBucketMenu }) {
-    const { getBuckets } = useContext(BucketContext);
+    const { getWorkspaces } = useContext(BucketContext);
 
     async function bucketLockHandler(id) {
         await toggleBucketLock(id);
-        getBuckets();
+        getWorkspaces();
     }
 
     function onOpenAsGroupTabsHandler(bucket) {
@@ -19,7 +20,7 @@ function OptionsMenu({ ref, bucket, currentBucketMenu }) {
 
     async function deleteBucketHandler(id) {
         await deleteBucket(id);
-        getBuckets();
+        getWorkspaces();
     }
 
     return <>

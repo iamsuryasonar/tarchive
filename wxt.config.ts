@@ -25,7 +25,6 @@ export default defineConfig({
     permissions: [
       "tabs",
       "tabGroups",
-      "storage"
     ],
     commands: {
       "add-tabs": {
