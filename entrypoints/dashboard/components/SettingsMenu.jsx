@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getIsAllowDuplicateTab, updateIsAllowDuplicateTab } from '../../../db';
+import { getIsAllowDuplicateTab, getIsAllowPinnedTab, updateIsAllowDuplicateTab, updateIsAllowPinnedTab } from '../../../db';
 import { useRef } from 'react';
 import { IoMdClose } from 'react-icons/io';
 
@@ -8,6 +8,7 @@ function SettingsMenu({ isOpen, setIsOpen }) {
     const settingsMenuRef = useRef();
 
     const [isAllowDuplicateTab, setIsAllowDuplicateTab] = useState(false);
+    const [isAllowPinnedTab, setIsAllowPinnedTab] = useState(false);
 
     useOutsideClick(settingsMenuRef, (e) => {
         setIsOpen(false);
@@ -17,6 +18,8 @@ function SettingsMenu({ isOpen, setIsOpen }) {
         (async () => {
             let res = await getIsAllowDuplicateTab();
             setIsAllowDuplicateTab(res);
+            let isAllowPinned = await getIsAllowPinnedTab();
+            setIsAllowPinnedTab(isAllowPinned)
         })()
     }, [])
 
@@ -26,7 +29,11 @@ function SettingsMenu({ isOpen, setIsOpen }) {
         setIsAllowDuplicateTab(res);
     }
 
-    console.log(isAllowDuplicateTab)
+    async function onCheckIsPinnedTab(e) {
+        await updateIsAllowPinnedTab(e.target.checked);
+        let res = await getIsAllowPinnedTab();
+        setIsAllowPinnedTab(res);
+    }
 
     return <>
         {
@@ -34,11 +41,15 @@ function SettingsMenu({ isOpen, setIsOpen }) {
                 <div className='pb-1 flex justify-end border-b-2 border-white/10'>
                     <button onClick={() => setIsOpen(false)} className='cursor-pointer text-[#c9c9c9] hover:text-white'><IoMdClose size={26} /></button>
                 </div>
-                <label htmlFor="isAllow" className='flex gap-2 cursor-pointer'>
-                    <input className='cursor-pointer' type="checkbox" name="" id="isAllow" onChange={onCheckIsDuplicateTab} checked={isAllowDuplicateTab ? true : false} />
+                <label htmlFor="isAllowDuplicate" className='flex gap-2 cursor-pointer'>
+                    <input className='cursor-pointer' type="checkbox" name="" id="isAllowDuplicate" onChange={onCheckIsDuplicateTab} checked={isAllowDuplicateTab ? true : false} />
                     <span>Allow duplicate tab in a bucket</span>
                 </label>
-            </div>
+                <label htmlFor="isAllowPinned" className='flex gap-2 cursor-pointer'>
+                    <input className='cursor-pointer' type="checkbox" name="" id="isAllowPinned" onChange={onCheckIsPinnedTab} checked={isAllowPinnedTab ? true : false} />
+                    <span>Allow pinned tab in a bucket</span>
+                </label>
+            </div >
         }
     </>
 }

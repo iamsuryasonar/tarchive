@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { addTabsToBucket } from '../../db';
-import { createReloadDashboard, getOpenedTabs, openDashboard, openCurrentTab } from '../../services'
+import { getOpenedTabs, openDashboard, openCurrentTab } from '../../services'
 import { IoAddCircleOutline, IoEyeOutline } from 'react-icons/io5';
 import { getEmptyPopUpFallBackMessage } from '../../utils/constants';
+import TabCard from './components/TabCard';
 
 function PopUp() {
 
@@ -33,7 +34,6 @@ function PopUp() {
     }
 
     function onTabSelectHandler(e, id) {
-        // stopPropagation();
         let count = 0;
 
         let newTabs = tabs.map((tab) => {
@@ -62,18 +62,18 @@ function PopUp() {
         const channel = new BroadcastChannel("tarchive_channel");
         channel.postMessage({ type: "workspaces_updated" });
 
-        // window.close(); //close popup window
+        window.close(); //close popup window
     }
 
     async function openDashboardHandler() {
         await openDashboard();
-        window.close(); //close popup window
+        window.close();
     }
 
     const fallbackMessage = tabs.length === 0 ? getEmptyPopUpFallBackMessage() : '';
 
     return <div className='w-[400px] max-h-[400px] overflow-y-auto p-3 pl-0 flex flex-col gap-2 text-base bg-[#222222] text-white'>
-        <div className='pl-3 flex items-center justify-between gap-2'>
+        <header className='pl-3 flex items-center justify-between gap-2'>
             <div className='flex items-center gap-2'>
                 {
                     tabs.length > 1 && <>
@@ -99,21 +99,18 @@ function PopUp() {
                     <p>view</p>
                 </button>
             </div>
-        </div>
+        </header>
         <div className='bg-white/[0.1] h-[1px] ml-2'></div>
         {
             tabs.length > 0 ?
                 <ul className='flex flex-col gap-2'>
                     {
-                        tabs.map(({ id, title, checked, favIconUrl }) => {
-                            return <div key={id} className='w-full px-3 py-1 flex items-center gap-2 bg-[#262831] rounded-r-full cursor-pointer group'>
-                                <input className='px-2 accent-blue-200 bg-[#2a2e3b] border border-[#3a3f4f] focus:ring-1 focus:ring-blue-300 rounded cursor-pointer' type="checkbox" onChange={(e) => onTabSelectHandler(e, id)} checked={checked} />
-                                <div className='bg-[#6e7386] w-[2px] h-4 rounded-full shrink-0'></div>
-                                <div className='grid grid-flow-col gap-1' onClick={() => openCurrentTab(id)}>
-                                    <img src={favIconUrl} width={20} height={20} className='' />
-                                    <button className='truncate text-gray-300 group-hover:text-blue-200 cursor-pointer'>{title}</button>
-                                </div>
-                            </div>
+                        tabs.map((tab) => {
+                            return <TabCard
+                                tab={tab}
+                                openCurrentTab={openCurrentTab}
+                                onTabSelectHandler={onTabSelectHandler}
+                            />
                         })
                     }
                 </ul>

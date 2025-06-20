@@ -1,6 +1,6 @@
 import { useState, useContext, useRef } from 'react'
 import { IoOpenOutline } from "react-icons/io5";
-import { renameBucketName, toggleTag } from '../../../db';
+import { deleteTab, renameBucketName, toggleTag } from '../../../db';
 import { openTabs } from '../../../services';
 import { BucketContext } from '../context/context';
 import useOutsideClick from '../../../hooks/useOutsideClick';
@@ -63,6 +63,11 @@ function BucketCard(props) {
         }
     }
 
+    async function deleteTabHandler(tabId, bucketId) {
+        await deleteTab(tabId, bucketId);
+        await getWorkspaces();
+    }
+
     return (
         <div key={bucket.id} className='h-full flex flex-col gap-2 text-white'>
             <div className='h-[44px] p-1 relative pl-4 flex items-center justify-between gap-6 bg-[#262831] rounded-full'>
@@ -110,10 +115,15 @@ function BucketCard(props) {
                 <div className='px-4 flex flex-col gap-1'>
                     {
                         bucket.tabs.map(({ id, url, title, favIconUrl }) => {
-                            return <a className='w-fit hover:underline hover:text-blue-200 cursor-pointer flex items-center gap-2' target='_blank' key={id} href={url}>
-                                <img src={favIconUrl} width={20} height={20} className='' />
-                                <p>{title}</p>
-                            </a>
+                            return <div key={id} className='flex justify-between'>
+                                <a className='w-fit hover:underline hover:text-blue-200 cursor-pointer flex items-center gap-2' target='_blank' key={id} href={url}>
+                                    <img src={favIconUrl} width={20} height={20} className='' />
+                                    <p>{title}</p>
+                                </a>
+                                <button onClick={() => deleteTabHandler(id, bucket.id)} className='text-white/80 hover:text-white cursor-pointer'>
+                                    <IoMdClose />
+                                </button>
+                            </div>
                         })
                     }
                 </div>

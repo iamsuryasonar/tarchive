@@ -1,10 +1,46 @@
 import { browser } from 'wxt/browser';
+import { getIsAllowDuplicateTab, getIsAllowPinnedTab } from '../db';
 
 export async function getOpenedTabs() {
-    let IS_GET_PINNED = false; // todo - get this from local storage, make it configurable in settings
-    let tabs = await browser.tabs.query({ pinned: IS_GET_PINNED });
-    let dashboardTab = await getDashboardTab();
-    let filteredTabs = tabs.filter((tab) => tab.id !== dashboardTab?.id);
+    const IS_ALLOW_PINNED = await getIsAllowPinnedTab();
+    const IS_DUPLICATE_TAB_ALLOWED = await getIsAllowDuplicateTab();
+
+    let tabs = await browser.tabs.query({});
+
+    let filteredTabs = tabs.filter(tab => {
+        const url = tab.url || "";
+        return (
+            url !== "" &&
+            !url.startsWith("chrome://") &&
+            !url.startsWith("chrome-extension://") &&
+            !url.startsWith("about:")
+        );
+    });
+
+    filteredTabs = filteredTabs.filter(tab => {
+        if (!tab.pinned) {
+            return true;
+        }
+
+        if (tab.pinned === IS_ALLOW_PINNED) {
+            return true;
+        } else {
+            return false;
+        }
+    });
+
+    if (!IS_DUPLICATE_TAB_ALLOWED) {
+        const seen = new Set();
+        filteredTabs = filteredTabs.filter((tab) => {
+            if (seen.has(tab.url)) {
+                return false;
+            } else {
+                seen.add(tab.url);
+                return true;
+            }
+        })
+    }
+
     return filteredTabs;
 }
 

@@ -1,6 +1,9 @@
 const DB_NAME = 'TarchiveDB';
+import { getOpenedTabs } from '../services';
+import { defaultWorkspaces } from '../utils/constants/index';
 const BUCKET_STORE_NAME = 'buckets';
 const SETTINGS_STORE_NAME = 'settings';
+const SESSION_STORE_NAME = 'session';
 const DB_VERSION = 1;
 
 function openDB() {
@@ -15,6 +18,10 @@ function openDB() {
 
             if (!db.objectStoreNames.contains(SETTINGS_STORE_NAME)) {
                 db.createObjectStore(SETTINGS_STORE_NAME, { keyPath: "key" });
+            }
+
+            if (!db.objectStoreNames.contains(SESSION_STORE_NAME)) {
+                db.createObjectStore(SESSION_STORE_NAME, { keyPath: "key" });
             }
         };
 
@@ -36,31 +43,8 @@ async function getAllBuckets() {
 export async function addTabsToBucket(tabs) {
     if (tabs.length === 0) return;
 
-    const IS_DUPLICATE_TAB_ALLOWED = await getIsAllowDuplicateTab();
-
-    let filteredTabs = tabs;
-
-    if (!IS_DUPLICATE_TAB_ALLOWED) {
-        const seen = new Set();
-        filteredTabs = tabs.filter((tab) => {
-            if (seen.has(tab.url)) {
-                console.log('re', tab.url)
-                return false;
-            } else {
-                seen.add(tab.url);
-                console.log('add', tab.url)
-                return true;
-            }
-        })
-    }
-
-    filteredTabs = filteredTabs.filter((tab) => {
+    filteredTabs = tabs.filter((tab) => {
         if (tab.checked !== false) return tab;
-    });
-
-
-    filteredTabs = filteredTabs.filter(tab => {
-        return tab.url && !tab.url.match(/^(chrome|about):/);
     });
 
     if (filteredTabs.length === 0) return; // return if no tabs
@@ -71,7 +55,7 @@ export async function addTabsToBucket(tabs) {
         name: id.slice(0, 8),
         createdAt: new Date().toISOString(),
         tabs: filteredTabs,
-        tag: ['All'],
+        tag: [defaultWorkspaces.ALL],
         isLocked: false,
     };
 
@@ -84,6 +68,7 @@ export async function deleteBucket(id) {
     const buckets = await getAllBuckets();
     const bucket = buckets.find(b => b.id === id);
     if (bucket?.isLocked) return;
+
     const db = await openDB();
     const tx = db.transaction(BUCKET_STORE_NAME, 'readwrite');
     tx.objectStore(BUCKET_STORE_NAME).delete(id);
@@ -93,9 +78,9 @@ export async function renameBucketName(id, name) {
     const db = await openDB();
     const tx = db.transaction(BUCKET_STORE_NAME, 'readwrite');
     const store = tx.objectStore(BUCKET_STORE_NAME);
-    const bucket = await store.get(id);
+    const req = await store.get(id);
 
-    bucket.onsuccess = () => {
+    req.onsuccess = () => {
         const data = bucket.result;
         if (data) {
             data.name = name;
@@ -154,10 +139,27 @@ export async function toggleTag(id, tag) {
     };
 }
 
+export async function deleteTab(tabId, bucketId) {
+    const db = await openDB();
+    const tx = db.transaction(BUCKET_STORE_NAME, 'readwrite');
+    const store = tx.objectStore(BUCKET_STORE_NAME);
+    const req = store.get(bucketId);
+
+    req.onsuccess = async () => {
+        const data = req.result;
+        if (data?.tabs?.length === 1) {
+            store.delete(bucketId);
+            return;
+        }
+        data.tabs = data.tabs.filter((tab) => tab.id !== tabId);
+        store.put(data);
+    };
+}
+
 export async function saveSetting(key, value) {
     const db = await openDB();
-    const tx = db.transaction('settings', 'readwrite');
-    const store = tx.objectStore('settings');
+    const tx = db.transaction(SETTINGS_STORE_NAME, 'readwrite');
+    const store = tx.objectStore(SETTINGS_STORE_NAME);
 
     const setting = { key, value };
     store.put(setting);
@@ -165,8 +167,8 @@ export async function saveSetting(key, value) {
 
 export async function getSetting(key) {
     const db = await openDB();
-    const tx = db.transaction('settings', 'readonly');
-    const store = tx.objectStore('settings');
+    const tx = db.transaction(SETTINGS_STORE_NAME, 'readonly');
+    const store = tx.objectStore(SETTINGS_STORE_NAME);
 
     return new Promise((resolve, reject) => {
         const request = store.get(key);
@@ -184,4 +186,35 @@ export async function updateIsAllowDuplicateTab(value) {
 
 export async function getIsAllowDuplicateTab() {
     return await getSetting('IS_ALLOW_DUPLICATE_TAB');
+}
+
+export async function updateIsAllowPinnedTab(value) {
+    await saveSetting('IS_ALLOW_PINNED_TAB', value);
+}
+
+export async function getIsAllowPinnedTab() {
+    return await getSetting('IS_ALLOW_PINNED_TAB');
+}
+
+export async function saveCurrentSession() {
+    const tabs = await getOpenedTabs();
+
+    const db = await openDB();
+    const tx = db.transaction(SESSION_STORE_NAME, "readwrite");
+    const store = tx.objectStore(SESSION_STORE_NAME);
+
+    await store.clear();
+
+    store.put({ key: "lastSession", tabs });
+}
+
+export async function getLastSession() {
+    const db = await openDB();
+    const tx = db.transaction(SESSION_STORE_NAME, 'readonly');
+    const store = tx.objectStore(SESSION_STORE_NAME);
+
+    return new Promise((resolve) => {
+        const request = store.getAll();
+        request.onsuccess = () => resolve(request.result);
+    });
 }

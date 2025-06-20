@@ -9,3 +9,9 @@ export const emptyPopUpFallbackMessages = [
 export function getEmptyPopUpFallBackMessage() {
     return emptyPopUpFallbackMessages[Math.floor(Math.random() * emptyPopUpFallbackMessages.length)];
 }
+
+export const defaultWorkspaces = {
+    ALL: 'All',
+    FAVORITE: 'Favorite',
+    LAST_SESSION: 'Last session'
+}
