@@ -43,7 +43,7 @@ async function getAllBuckets() {
 export async function addTabsToBucket(tabs) {
     if (tabs.length === 0) return;
 
-    filteredTabs = tabs.filter((tab) => {
+    let filteredTabs = tabs.filter((tab) => {
         if (tab.checked !== false) return tab;
     });
 
@@ -81,7 +81,8 @@ export async function renameBucketName(id, name) {
     const req = await store.get(id);
 
     req.onsuccess = () => {
-        const data = bucket.result;
+        const data = req.result;
+
         if (data) {
             data.name = name;
             store.put(data);
@@ -218,3 +219,81 @@ export async function getLastSession() {
         request.onsuccess = () => resolve(request.result);
     });
 }
+
+export async function exportAllDataAsJson() {
+    const db = await openDB();
+
+    const getAllFromStore = (storeName) => {
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(storeName, 'readonly');
+            const store = tx.objectStore(storeName);
+            const req = store.getAll();
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+        });
+    };
+
+    const buckets = await getAllFromStore(BUCKET_STORE_NAME);
+    const settings = await getAllFromStore(SETTINGS_STORE_NAME);
+
+    const data = {
+        buckets,
+        settings,
+        exportedAt: new Date().toISOString()
+    };
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tarchive-export-${data.exportedAt}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+}
+
+export async function importAllDataFromJSON(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = async (event) => {
+            try {
+                const data = JSON.parse(event.target.result);
+
+                if (!data.buckets || !data.settings) {
+                    throw new Error('Invalid JSON structure');
+                }
+
+                const db = await openDB();
+
+                const tx = db.transaction([BUCKET_STORE_NAME, SETTINGS_STORE_NAME], 'readwrite');
+                const bucketStore = tx.objectStore(BUCKET_STORE_NAME);
+                const settingStore = tx.objectStore(SETTINGS_STORE_NAME);
+
+                bucketStore.clear();
+                settingStore.clear();
+
+                data?.buckets?.forEach(bucket => {
+                    bucketStore.put(bucket);
+                });
+
+                data?.settings?.forEach(setting => {
+                    settingStore.put(setting);
+                });
+
+                tx.oncomplete = () => resolve(true);
+                tx.onerror = () => reject(tx.error);
+
+            } catch (err) {
+                reject(err);
+            }
+        };
+
+        reader.onerror = () => reject(reader.error);
+
+        reader.readAsText(file);
+    });
+}
+

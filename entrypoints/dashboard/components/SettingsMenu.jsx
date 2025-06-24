@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
-import { getIsAllowDuplicateTab, getIsAllowPinnedTab, updateIsAllowDuplicateTab, updateIsAllowPinnedTab } from '../../../db';
+import { importAllDataFromJSON, exportAllDataAsJson, getIsAllowDuplicateTab, getIsAllowPinnedTab, updateIsAllowDuplicateTab, updateIsAllowPinnedTab } from '../../../db';
 import { useRef } from 'react';
 import { IoMdClose } from 'react-icons/io';
 
 function SettingsMenu({ isOpen, setIsOpen }) {
 
     const settingsMenuRef = useRef();
-
+    const fileInputRef = useRef(null);
     const [isAllowDuplicateTab, setIsAllowDuplicateTab] = useState(false);
     const [isAllowPinnedTab, setIsAllowPinnedTab] = useState(false);
 
@@ -35,6 +35,27 @@ function SettingsMenu({ isOpen, setIsOpen }) {
         setIsAllowPinnedTab(res);
     }
 
+    const handleButtonClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        try {
+            await importAllDataFromJSON(file);
+
+            const channel = new BroadcastChannel("tarchive_channel");
+            channel.postMessage({ type: "workspaces_updated" });
+            
+            alert('Import successful!');
+        } catch (error) {
+            console.error('Import failed:', error);
+            alert('Import failed.');
+        }
+    };
+
     return <>
         {
             isOpen && <div ref={settingsMenuRef} className='absolute z-20 top-full right-4 w-fit p-4 flex flex-col gap-2 bg-[#262832] rounded-lg shadow-md border-1 border-black/20'>
@@ -49,6 +70,15 @@ function SettingsMenu({ isOpen, setIsOpen }) {
                     <input className='cursor-pointer' type="checkbox" name="" id="isAllowPinned" onChange={onCheckIsPinnedTab} checked={isAllowPinnedTab ? true : false} />
                     <span>Allow pinned tab in a bucket</span>
                 </label>
+                <button className='text-[#c9c9c9] hover:text-white cursor-pointer border-1 px-4 py-1 rounded-full' onClick={() => exportAllDataAsJson()}>Export</button>
+                <button className='text-[#c9c9c9] hover:text-white cursor-pointer border-1 px-4 py-1 rounded-full' onClick={handleButtonClick}>Import</button>
+                <input
+                    type="file"
+                    accept=".json"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    className="hidden"
+                />
             </div >
         }
     </>
