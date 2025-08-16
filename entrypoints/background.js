@@ -1,30 +1,30 @@
-import { addTabsToBucket, saveCurrentSession } from "../db";
-import { getOpenedTabs, openDashboard } from "../services";
+import { addTabsToBucket, saveLastSession } from "../db";
+import { ensureDashboardFirst, getOpenedTabs, openDashboard } from "../services";
 import { browser } from 'wxt/browser';
 
 export default defineBackground(() => {
+  browser.runtime.onStartup.addListener(ensureDashboardFirst);
+
   browser.runtime.onInstalled.addListener(({ reason }) => {
     if (reason === 'install') {
-      browser.tabs.create({ url: browser.runtime.getURL("dashboard.html"), index: 0, pinned: true });
-    }
-  });
-
-  browser.runtime.onStartup.addListener(async () => {
-    let tabs = await browser.tabs.query({ url: browser.runtime.getURL("dashboard.html") });
-
-    if (tabs.length === 0) {
-      browser.tabs.create({ url: browser.runtime.getURL("dashboard.html"), index: 0, pinned: true });
+      ensureDashboardFirst();
     }
   });
 
   browser.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     if (changeInfo.status === "complete" && tab.url) {
-      await saveCurrentSession();
+      let session = await getOpenedTabs();
+      await browser.storage.local.set({ currSession: session });
     }
   });
 
+  browser.windows.onRemoved.addListener(async (winId) => {
+    const { currSession } = await browser.storage.local.get("currSession");
+    await saveLastSession(currSession);
+  });
+
   browser.commands.onCommand.addListener(async (command) => {
-    if (command === "add-tabs") {
+    if (command === "addTabs") {
       let tabs = await getOpenedTabs();
 
       let filteredTabs = tabs.filter((tab) => {
@@ -34,9 +34,12 @@ export default defineBackground(() => {
       if (filteredTabs.length === 0) return;
 
       await addTabsToBucket(filteredTabs);
+
+      const channel = new BroadcastChannel("tarchive_channel");
+      channel.postMessage({ type: "workspaces_updated" });
     }
 
-    if (command === "view-buckets") {
+    if (command === "viewBuckets") {
       await openDashboard();
     }
   });

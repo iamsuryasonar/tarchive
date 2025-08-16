@@ -25,17 +25,18 @@ export default defineConfig({
     permissions: [
       "tabs",
       "tabGroups",
+      "storage",
     ],
     commands: {
-      "add-tabs": {
+      addTabs: {
         suggested_key: {
-          default: "Ctrl+Shift+A"
+          default: "Alt+Shift+A"
         },
         description: 'Add current tabs to bucket',
       },
-      "view-buckets": {
+      viewBuckets: {
         suggested_key: {
-          default: "Ctrl+Shift+V"
+          default: "Alt+Shift+S"
         },
         description: 'View Buckets',
       },

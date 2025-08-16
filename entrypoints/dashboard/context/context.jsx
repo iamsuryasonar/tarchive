@@ -5,8 +5,8 @@ export const BucketContext = React.createContext(null);
 
 export function BucketProvider({ children }) {
     const [loading, setLoading] = useState(false);
-    const [workspaces, setWorkspaces] = useState({});
-    const [lastSession, setLastSession] = useState({});
+    const [workspaces, setWorkspaces] = useState([]);
+    const [lastSession, setLastSession] = useState([]);
 
     async function getWorkspaces() {
         setLoading(true);
@@ -18,13 +18,22 @@ export function BucketProvider({ children }) {
     async function getSession() {
         setLoading(true);
         let res = await getLastSession();
-        setLastSession(res[0].tabs)
+        setLastSession(res[0]?.tabs)
         setLoading(false);
     }
 
     useEffect(() => {
         getWorkspaces();
         getSession();
+    }, [])
+
+    useEffect(() => {
+        const channel = new BroadcastChannel("tarchive_channel");
+        channel.onmessage = (event) => {
+            if (event.data.type === "session_updated") {
+                getSession();
+            }
+        };
     }, [])
 
 

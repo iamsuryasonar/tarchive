@@ -21,7 +21,7 @@ declare global {
   const useContext: typeof import('react')['useContext']
   const useEffect: typeof import('react')['useEffect']
   const useMemo: typeof import('react')['useMemo']
-  const useOutsideClick: typeof import('/home/surya/Desktop/Projects/tarchive/hooks/useOutsideClick')['default']
+  const useOutsideClick: typeof import('C:/Users/iamsu/Documents/personal/projects/tarchive/hooks/useOutsideClick')['default']
   const useReducer: typeof import('react')['useReducer']
   const useRef: typeof import('react')['useRef']
   const useState: typeof import('react')['useState']

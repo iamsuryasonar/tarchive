@@ -1,5 +1,5 @@
 const DB_NAME = 'TarchiveDB';
-import { getOpenedTabs } from '../services';
+import { filterTabs } from '../services';
 import { defaultWorkspaces } from '../utils/constants/index';
 const BUCKET_STORE_NAME = 'buckets';
 const SETTINGS_STORE_NAME = 'settings';
@@ -197,9 +197,8 @@ export async function getIsAllowPinnedTab() {
     return await getSetting('IS_ALLOW_PINNED_TAB');
 }
 
-export async function saveCurrentSession() {
-    const tabs = await getOpenedTabs();
-
+export async function saveLastSession(tabs) {
+    tabs = await filterTabs(tabs)
     const db = await openDB();
     const tx = db.transaction(SESSION_STORE_NAME, "readwrite");
     const store = tx.objectStore(SESSION_STORE_NAME);

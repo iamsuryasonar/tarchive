@@ -1,11 +1,9 @@
 import { browser } from 'wxt/browser';
 import { getIsAllowDuplicateTab, getIsAllowPinnedTab } from '../db';
 
-export async function getOpenedTabs() {
+export async function filterTabs(tabs) {
     const IS_ALLOW_PINNED = await getIsAllowPinnedTab();
     const IS_DUPLICATE_TAB_ALLOWED = await getIsAllowDuplicateTab();
-
-    let tabs = await browser.tabs.query({});
 
     let filteredTabs = tabs.filter(tab => {
         const url = tab.url || "";
@@ -42,6 +40,11 @@ export async function getOpenedTabs() {
     }
 
     return filteredTabs;
+}
+
+export async function getOpenedTabs() {
+    let tabs = await browser.tabs.query({});
+    return await filterTabs(tabs);
 }
 
 export async function getDashboardTab() {
@@ -95,4 +98,16 @@ export async function openTabGroup(bucket) {
             });
         });
     });
+}
+
+export async function ensureDashboardFirst() {
+    const tabs = await browser.tabs.query({ url: browser.runtime.getURL("dashboard.html") });
+    if (tabs.length === 0) {
+        await browser.tabs.create({ url: browser.runtime.getURL("dashboard.html"), index: 0, pinned: true });
+    } else {
+        const dashboardTab = tabs[0];
+        if (dashboardTab.index !== 0) {
+            await browser.tabs.move(dashboardTab.id, { index: 0 });
+        }
+    }
 }
