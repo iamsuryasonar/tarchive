@@ -8,7 +8,9 @@ function UpdateBucketName({ bucket, setIdOfSelectedBucket }) {
   const [bucketInput, setBucketInput] = useState(bucket?.name || "");
   const inputContainerRef = useRef(null);
   const inputRef = useRef(null);
-  const { getWorkspaces } = useContext(BucketContext);
+
+  const bucketContext = useContext(BucketContext);
+  const getWorkspaces = bucketContext?.getWorkspaces;
 
   useOutsideClick(inputContainerRef, (e) => {
     setBucketInput("");

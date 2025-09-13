@@ -19,7 +19,9 @@ function BucketCard(props) {
     setCurrentBucketMenu,
   } = props;
 
-  const { getWorkspaces } = useContext(BucketContext);
+  const bucketContext = useContext(BucketContext);
+  const getWorkspaces = bucketContext?.getWorkspaces;
+
   const bucketMenuRef = useRef(null);
 
   useOutsideClick(bucketMenuRef, (e) => {

@@ -1,4 +1,4 @@
-import { addTabsToBucket } from "../db";
+import { addTabsToBucket, deleteLastSession } from "../db";
 import { ensureDashboardFirst, getOpenedTabs, openDashboard, saveCurrentSession, updateLastSessionFromCurrent } from "../services";
 
 export default defineBackground(() => {
@@ -25,11 +25,13 @@ export default defineBackground(() => {
 
     // when it is the last window async operation is not executed, so handling this update below on start up
     if (windows.length === 0) return;
+    await deleteLastSession();
     await updateLastSessionFromCurrent();
   });
 
   // update lastSession, when it was closed and not update the it
   browser.runtime.onStartup.addListener(async () => {
+    await deleteLastSession();
     await updateLastSessionFromCurrent();
   });
 

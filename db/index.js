@@ -1,11 +1,9 @@
 const DB_NAME = 'TarchiveDB';
-import { filterTabs } from '../services';
 import { defaultWorkspaces } from '../utils/constants/index';
 const BUCKET_STORE_NAME = 'buckets';
 const SETTINGS_STORE_NAME = 'settings';
 const SESSION_STORE_NAME = 'session';
 const DB_VERSION = 1;
-let debounceTimer = null;
 
 function openDB() {
     return new Promise((resolve, reject) => {
@@ -41,7 +39,7 @@ async function getAllBuckets() {
     });
 }
 
-export async function addTabsToBucket(tabs) {
+export async function addTabsToBucket(tabs, workspace) {
     if (tabs.length === 0) return;
 
     let filteredTabs = tabs.filter((tab) => {
@@ -56,7 +54,7 @@ export async function addTabsToBucket(tabs) {
         name: id.slice(0, 8),
         createdAt: new Date().toISOString(),
         tabs: filteredTabs,
-        tag: [defaultWorkspaces.ALL],
+        tag: [workspace],
         isLocked: false,
     };
 
@@ -66,6 +64,7 @@ export async function addTabsToBucket(tabs) {
 }
 
 export async function deleteBucket(id) {
+    if (!id) return;
     const buckets = await getAllBuckets();
     const bucket = buckets.find(b => b.id === id);
     if (bucket?.isLocked) return;
@@ -90,6 +89,33 @@ export async function renameBucketName(id, name) {
         }
     };
 }
+
+export async function deleteLastSession() {
+    let tag = defaultWorkspaces.LAST_SESSION;
+    const buckets = await getAllBuckets();
+    const filteredBuckets = buckets.filter(
+        b => Array.isArray(b.tag) && b.tag.includes(tag)
+    );
+
+    if (!filteredBuckets.length === 0) return;
+
+    const db = await openDB();
+    const tx = db.transaction(BUCKET_STORE_NAME, 'readwrite');
+    const store = tx.objectStore(BUCKET_STORE_NAME);
+
+    filteredBuckets.forEach(bucket => {
+        if (bucket?.isLocked) return;
+        if (bucket.tag.length === 1) {
+            // Only LAST_SESSION tag then delete bucket
+            store.delete(bucket.id);
+        } else {
+            // Multiple tags then remove only LAST_SESSION tag
+            bucket.tag = bucket.tag.filter(t => t !== tag);
+            store.put(bucket);
+        }
+    })
+}
+
 
 export async function toggleBucketLock(id) {
     const db = await openDB();
@@ -118,6 +144,8 @@ export async function getAllWorkspaces() {
             workspaces[tag].push(bucket);
         });
     });
+
+    workspaces[defaultWorkspaces.ALL] = [...buckets];
 
     return workspaces;
 }
@@ -198,36 +226,6 @@ export async function getIsAllowPinnedTab() {
     return await getSetting('IS_ALLOW_PINNED_TAB');
 }
 
-export async function saveLastSession(tabs) {
-    tabs = await filterTabs(tabs)
-    const db = await openDB();
-    const tx = db.transaction(SESSION_STORE_NAME, "readwrite");
-    const store = tx.objectStore(SESSION_STORE_NAME);
-
-    await store.clear();
-
-    store.put({ key: "lastSession", tabs });
-}
-
-export function debounceSaveSession(tabs, delay = 1000) {
-    if (debounceTimer) clearTimeout(debounceTimer);
-
-    debounceTimer = setTimeout(async () => {
-        await saveLastSession(tabs);
-    }, delay);
-}
-
-export async function getLastSession() {
-    const db = await openDB();
-    const tx = db.transaction(SESSION_STORE_NAME, 'readonly');
-    const store = tx.objectStore(SESSION_STORE_NAME);
-
-    return new Promise((resolve) => {
-        const request = store.getAll();
-        request.onsuccess = () => resolve(request.result);
-    });
-}
-
 export async function exportAllDataAsJson() {
     const db = await openDB();
 
@@ -263,45 +261,46 @@ export async function exportAllDataAsJson() {
 }
 
 export async function importAllDataFromJSON(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
+    return new Promise
+        ((resolve, reject) => {
+            const reader = new FileReader();
 
-        reader.onload = async (event) => {
-            try {
-                const data = JSON.parse(event.target.result);
+            reader.onload = async (event) => {
+                try {
+                    const data = JSON.parse(event.target.result);
 
-                if (!data.buckets || !data.settings) {
-                    throw new Error('Invalid JSON structure');
+                    if (!data.buckets || !data.settings) {
+                        throw new Error('Invalid JSON structure');
+                    }
+
+                    const db = await openDB();
+
+                    const tx = db.transaction([BUCKET_STORE_NAME, SETTINGS_STORE_NAME], 'readwrite');
+                    const bucketStore = tx.objectStore(BUCKET_STORE_NAME);
+                    const settingStore = tx.objectStore(SETTINGS_STORE_NAME);
+
+                    bucketStore.clear();
+                    settingStore.clear();
+
+                    data?.buckets?.forEach(bucket => {
+                        bucketStore.put(bucket);
+                    });
+
+                    data?.settings?.forEach(setting => {
+                        settingStore.put(setting);
+                    });
+
+                    tx.oncomplete = () => resolve(true);
+                    tx.onerror = () => reject(tx.error);
+
+                } catch (err) {
+                    reject(err);
                 }
+            };
 
-                const db = await openDB();
+            reader.onerror = () => reject(reader.error);
 
-                const tx = db.transaction([BUCKET_STORE_NAME, SETTINGS_STORE_NAME], 'readwrite');
-                const bucketStore = tx.objectStore(BUCKET_STORE_NAME);
-                const settingStore = tx.objectStore(SETTINGS_STORE_NAME);
-
-                bucketStore.clear();
-                settingStore.clear();
-
-                data?.buckets?.forEach(bucket => {
-                    bucketStore.put(bucket);
-                });
-
-                data?.settings?.forEach(setting => {
-                    settingStore.put(setting);
-                });
-
-                tx.oncomplete = () => resolve(true);
-                tx.onerror = () => reject(tx.error);
-
-            } catch (err) {
-                reject(err);
-            }
-        };
-
-        reader.onerror = () => reject(reader.error);
-
-        reader.readAsText(file);
-    });
+            reader.readAsText(file);
+        });
 }
 

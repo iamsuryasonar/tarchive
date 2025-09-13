@@ -3,13 +3,13 @@ import { BucketContext } from "./context/context.jsx";
 import Navbar from "./components/Navbar.jsx";
 import SideBar from "./components/SideBar.jsx";
 import LoadingSpinner from "./components/LoadingSpinner.jsx";
-import WorkspaceMenu from "./components/WorkspaceMenu.jsx";
 import BucketsContainer from "./components/BucketsContainer.jsx";
-import { defaultWorkspaces } from "../../utils/constants/index.js";
 
 function Dashboard() {
-  const { loading, workspaces, lastSession, getWorkspaces } =
-    useContext(BucketContext);
+  const context = useContext(BucketContext);
+  if (!context) return null;
+
+  const { loading, workspaces, getWorkspaces } = context;
 
   const [tag, setTag] = useState("All");
   const [isAddWorkspaceMenuOpen, setIsAddWorkspaceMenuOpen] = useState(false);
@@ -29,7 +29,7 @@ function Dashboard() {
   }, []);
 
   return (
-    <div className="bg-[#222222] relative">
+    <div className="bg-[#222222] relative min-h-svh h-full">
       {/* <WorkspaceMenu isAddWorkspaceMenuOpen={isAddWorkspaceMenuOpen} setIsAddWorkspaceMenuOpen={setIsAddWorkspaceMenuOpen} /> */}
       <div className="min-h-svh max-w-5xl m-auto w-full gap-4 text-base bg-[#222222] text-white">
         <LoadingSpinner loading={loading} />
@@ -40,41 +40,12 @@ function Dashboard() {
             setTag={setTag}
             setIsAddWorkspaceMenuOpen={setIsAddWorkspaceMenuOpen}
           />
-          <div className="w-full h-full pb-6">
-            {tag === defaultWorkspaces.LAST_SESSION ? (
-              <>
-                <p className="font-bold text-lg pb-2 ">Last Session</p>
-                <div className="w-full h-auto flex flex-col gap-1">
-                  {lastSession?.map(
-                    ({ id, title, favIconUrl, url }, index, array) => {
-                      return (
-                        <a
-                          className="w-fit hover:underline hover:text-blue-200 cursor-pointer flex items-center gap-2 text-white"
-                          target="_blank"
-                          key={id}
-                          href={url}
-                        >
-                          <img
-                            src={favIconUrl}
-                            width={20}
-                            height={20}
-                            className=""
-                            alt={`icon of ${title}`}
-                          />
-                          <p>{title}</p>
-                        </a>
-                      );
-                    }
-                  )}
-                </div>
-              </>
-            ) : (
-              <BucketsContainer
-                buckets={newListOfBuckets}
-                loading={loading}
-                tag={tag}
-              />
-            )}
+          <div className="w-full h-full py-6 relative">
+            <BucketsContainer
+              buckets={newListOfBuckets}
+              loading={loading}
+              tag={tag}
+            />
           </div>
         </main>
       </div>

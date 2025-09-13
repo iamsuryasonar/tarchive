@@ -7,7 +7,8 @@ import { CiLock, CiUnlock } from "react-icons/ci";
 import { MdOutlineDelete } from "react-icons/md";
 
 function OptionsMenu({ ref, bucket, currentBucketMenu }) {
-  const { getWorkspaces } = useContext(BucketContext);
+   const bucketContext = useContext(BucketContext);
+   const getWorkspaces = bucketContext?.getWorkspaces;
 
   async function bucketLockHandler(id) {
     await toggleBucketLock(id);

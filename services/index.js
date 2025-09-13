@@ -1,5 +1,6 @@
 import { browser } from 'wxt/browser';
-import { getIsAllowDuplicateTab, getIsAllowPinnedTab } from '../db';
+import { addTabsToBucket, getIsAllowDuplicateTab, getIsAllowPinnedTab } from '../db';
+import { defaultWorkspaces } from '../utils/constants';
 
 export async function filterTabs(tabs) {
     const IS_ALLOW_PINNED = await getIsAllowPinnedTab();
@@ -129,19 +130,10 @@ export async function saveCurrentSession(tabs) {
 }
 
 export async function updateLastSessionFromCurrent() {
-    console.log('step2');
-
     const { currentSession } = await browser.storage.local.get("currentSession");
-    console.log('step3');
 
     if (currentSession?.length) {
-        console.log('step4', currentSession);
-
-        await browser.storage.local.set({ lastSession: currentSession });
-        const { lastSession } = await browser.storage.local.get("lastSession");
-        console.log('step5', lastSession);
-
+        addTabsToBucket(currentSession, defaultWorkspaces.LAST_SESSION);
     }
-    console.log('step6');
 
 }

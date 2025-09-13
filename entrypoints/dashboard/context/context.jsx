@@ -6,7 +6,7 @@ export const BucketContext = React.createContext(null);
 
 export function BucketProvider({ children }) {
   const [loading, setLoading] = useState(false);
-  const [workspaces, setWorkspaces] = useState([]);
+  const [workspaces, setWorkspaces] = useState({});
   const [lastSession, setLastSession] = useState([]);
 
   async function getWorkspaces() {
