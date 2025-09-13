@@ -3,7 +3,15 @@ import { ensureDashboardFirst, getOpenedTabs, openDashboard } from "../services"
 import { browser } from 'wxt/browser';
 
 export default defineBackground(() => {
-  browser.runtime.onStartup.addListener(ensureDashboardFirst);
+  let startupPhase = true;
+
+  browser.runtime.onStartup.addListener(async () => {
+    const { currSession } = await browser.storage.local.get("currSession");
+    await saveLastSession(currSession);
+    startupPhase = false;
+
+    ensureDashboardFirst();
+  });
 
   browser.runtime.onInstalled.addListener(({ reason }) => {
     if (reason === 'install') {
@@ -14,13 +22,9 @@ export default defineBackground(() => {
   browser.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     if (changeInfo.status === "complete" && tab.url) {
       let session = await getOpenedTabs();
+      if (startupPhase) return;
       await browser.storage.local.set({ currSession: session });
     }
-  });
-
-  browser.windows.onRemoved.addListener(async (winId) => {
-    const { currSession } = await browser.storage.local.get("currSession");
-    await saveLastSession(currSession);
   });
 
   browser.commands.onCommand.addListener(async (command) => {

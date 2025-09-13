@@ -107,6 +107,7 @@ function PopUp() {
                     {
                         tabs.map((tab) => {
                             return <TabCard
+                                key={tab.id}
                                 tab={tab}
                                 openCurrentTab={openCurrentTab}
                                 onTabSelectHandler={onTabSelectHandler}

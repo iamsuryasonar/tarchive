@@ -100,6 +100,13 @@ export async function openTabGroup(bucket) {
     });
 }
 
+export async function openTabInWindow(bucket) {
+    browser.windows.create({
+        url: bucket.tabs.map((tab) => tab.url),
+        focused: true,
+    });
+}
+
 export async function ensureDashboardFirst() {
     const tabs = await browser.tabs.query({ url: browser.runtime.getURL("dashboard.html") });
     if (tabs.length === 0) {
