@@ -5,6 +5,7 @@ const BUCKET_STORE_NAME = 'buckets';
 const SETTINGS_STORE_NAME = 'settings';
 const SESSION_STORE_NAME = 'session';
 const DB_VERSION = 1;
+let debounceTimer = null;
 
 function openDB() {
     return new Promise((resolve, reject) => {
@@ -206,6 +207,14 @@ export async function saveLastSession(tabs) {
     await store.clear();
 
     store.put({ key: "lastSession", tabs });
+}
+
+export function debounceSaveSession(tabs, delay = 1000) {
+    if (debounceTimer) clearTimeout(debounceTimer);
+
+    debounceTimer = setTimeout(async () => {
+        await saveLastSession(tabs);
+    }, delay);
 }
 
 export async function getLastSession() {

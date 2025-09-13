@@ -5,7 +5,7 @@ export async function filterTabs(tabs) {
     const IS_ALLOW_PINNED = await getIsAllowPinnedTab();
     const IS_DUPLICATE_TAB_ALLOWED = await getIsAllowDuplicateTab();
 
-    let filteredTabs = tabs.filter(tab => {
+    let filteredTabs = tabs?.filter(tab => {
         const url = tab.url || "";
         return (
             url !== "" &&
@@ -15,16 +15,12 @@ export async function filterTabs(tabs) {
         );
     });
 
-    filteredTabs = filteredTabs.filter(tab => {
-        if (!tab.pinned) {
+    filteredTabs = filteredTabs?.filter(tab => {
+        if (!tab?.pinned) {
             return true;
         }
 
-        if (tab.pinned === IS_ALLOW_PINNED) {
-            return true;
-        } else {
-            return false;
-        }
+        return tab?.pinned === IS_ALLOW_PINNED;
     });
 
     if (!IS_DUPLICATE_TAB_ALLOWED) {
@@ -117,4 +113,35 @@ export async function ensureDashboardFirst() {
             await browser.tabs.move(dashboardTab.id, { index: 0 });
         }
     }
+}
+
+/* ----- last session ----- */
+export async function getLastSession() {
+    const { lastSession } = await browser.storage.local.get("lastSession");
+    return Array.isArray(lastSession) ? lastSession : [];
+}
+
+export async function saveCurrentSession(tabs) {
+    const filtered = await filterTabs(tabs);
+    if (filtered?.length) {
+        await browser.storage.local.set({ currentSession: filtered });
+    }
+}
+
+export async function updateLastSessionFromCurrent() {
+    console.log('step2');
+
+    const { currentSession } = await browser.storage.local.get("currentSession");
+    console.log('step3');
+
+    if (currentSession?.length) {
+        console.log('step4', currentSession);
+
+        await browser.storage.local.set({ lastSession: currentSession });
+        const { lastSession } = await browser.storage.local.get("lastSession");
+        console.log('step5', lastSession);
+
+    }
+    console.log('step6');
+
 }
