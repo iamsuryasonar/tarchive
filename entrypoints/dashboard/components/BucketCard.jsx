@@ -47,8 +47,8 @@ function BucketCard(props) {
     }
   }
 
-  async function deleteTabHandler(tabId, bucketId) {
-    await deleteTab(tabId, bucketId);
+  async function deleteTabHandler(tabId, bucketId, url) {
+    await deleteTab(tabId, bucketId, url);
     await getWorkspaces();
   }
 
@@ -138,7 +138,7 @@ function BucketCard(props) {
                   <p>{title}</p>
                 </a>
                 <button
-                  onClick={() => deleteTabHandler(id, bucket.id)}
+                  onClick={() => deleteTabHandler(id, bucket.id, url)}
                   className="text-white/80 hover:text-white cursor-pointer"
                 >
                   <IoMdClose />

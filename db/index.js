@@ -170,21 +170,30 @@ export async function toggleTag(id, tag) {
     };
 }
 
-export async function deleteTab(tabId, bucketId) {
+export async function deleteTab(tabId, bucketId, url) {
     const db = await openDB();
-    const tx = db.transaction(BUCKET_STORE_NAME, 'readwrite');
+    const tx = db.transaction(BUCKET_STORE_NAME, "readwrite");
     const store = tx.objectStore(BUCKET_STORE_NAME);
     const req = store.get(bucketId);
-
 
     req.onsuccess = async () => {
         const data = req.result;
         if (data?.isLocked) return;
+
         if (data?.tabs?.length === 1) {
             store.delete(bucketId);
             return;
         }
-        data.tabs = data.tabs.filter((tab) => tab.id !== tabId);
+
+        data.tabs = data.tabs.filter((tab) => {
+            if (tabId) {
+                return tab.id !== tabId;
+            } else if (url) {
+                return tab.url !== url;
+            }
+            return true;
+        });
+
         store.put(data);
     };
 }
