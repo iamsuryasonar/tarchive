@@ -1,5 +1,5 @@
 import { browser } from 'wxt/browser';
-import { addTabsToBucket, getIsAllowDuplicateTab, getIsAllowPinnedTab } from '../db';
+import { addTabsToBucket, deleteLastSession, getIsAllowDuplicateTab, getIsAllowPinnedTab } from '../db';
 import { defaultWorkspaces } from '../utils/constants';
 
 export async function filterTabs(tabs) {
@@ -117,23 +117,25 @@ export async function ensureDashboardFirst() {
 }
 
 /* ----- last session ----- */
-export async function getLastSession() {
-    const { lastSession } = await browser.storage.local.get("lastSession");
-    return Array.isArray(lastSession) ? lastSession : [];
+function extractTabsFromSession(data) {
+    const tabs = [];
+
+    data.forEach(item => {
+        if (item.tab) {
+            tabs.push(item.tab);
+        } else if (item.window && Array.isArray(item.window.tabs)) {
+            tabs.push(...item.window.tabs);
+        }
+    });
+
+    return tabs;
 }
 
-export async function saveCurrentSession(tabs) {
-    const filtered = await filterTabs(tabs);
-    if (filtered?.length) {
-        await browser.storage.local.set({ currentSession: filtered });
+export async function updateLastSession(sessions) {
+    const allTabs = extractTabsFromSession(sessions);
+    await deleteLastSession();
+    const filteredTabs = await filterTabs(allTabs);
+    if (filteredTabs?.length) {
+        addTabsToBucket(filteredTabs, defaultWorkspaces.LAST_SESSION);
     }
-}
-
-export async function updateLastSessionFromCurrent() {
-    const { currentSession } = await browser.storage.local.get("currentSession");
-
-    if (currentSession?.length) {
-        addTabsToBucket(currentSession, defaultWorkspaces.LAST_SESSION);
-    }
-
 }

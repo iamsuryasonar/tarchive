@@ -12,7 +12,6 @@ function Dashboard() {
   const { loading, workspaces, getWorkspaces } = context;
 
   const [tag, setTag] = useState("All");
-  const [isAddWorkspaceMenuOpen, setIsAddWorkspaceMenuOpen] = useState(false);
 
   let newListOfBuckets = workspaces[tag];
 
@@ -30,16 +29,11 @@ function Dashboard() {
 
   return (
     <div className="bg-[#222222] relative min-h-svh h-full">
-      {/* <WorkspaceMenu isAddWorkspaceMenuOpen={isAddWorkspaceMenuOpen} setIsAddWorkspaceMenuOpen={setIsAddWorkspaceMenuOpen} /> */}
       <div className="min-h-svh max-w-5xl m-auto w-full gap-4 text-base bg-[#222222] text-white">
         <LoadingSpinner loading={loading} />
         <Navbar />
         <main className="relative flex gap-4 px-6">
-          <SideBar
-            tag={tag}
-            setTag={setTag}
-            setIsAddWorkspaceMenuOpen={setIsAddWorkspaceMenuOpen}
-          />
+          <SideBar tag={tag} setTag={setTag} />
           <div className="w-full h-full py-6 relative">
             <BucketsContainer
               buckets={newListOfBuckets}

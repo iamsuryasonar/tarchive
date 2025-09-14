@@ -26,6 +26,7 @@
     "tabs",
     "tabGroups",
     "storage",
+    "sessions",
     "scripting"
   ],
   "commands": {

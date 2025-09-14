@@ -1,8 +1,9 @@
 import { defaultWorkspaces } from "../../../utils/constants";
 import { MdOutlineHistory } from "react-icons/md";
 import { IoMdHeartEmpty } from "react-icons/io";
+import { TiArchive } from "react-icons/ti";
 
-function SideBar({ tag, setTag, setIsAddWorkspaceMenuOpen }) {
+function SideBar({ tag, setTag }) {
   return (
     <aside className="min-w-[200px] w-[350px] h-[calc(100%-60px)] sticky top-[60px] flex flex-col gap-4">
       <div className="flex flex-col gap-2">
@@ -14,8 +15,9 @@ function SideBar({ tag, setTag, setIsAddWorkspaceMenuOpen }) {
             onClick={() => setTag(defaultWorkspaces.ALL)}
             className={`${
               tag === defaultWorkspaces.ALL ? "bg-[#393d58]" : "bg-[#262831]"
-            } w-full py-1  hover:bg-[#28303d] rounded-full cursor-pointer`}
+            } w-full py-1  hover:bg-[#28303d] rounded-full cursor-pointer flex items-center justify-center gap-2`}
           >
+            <TiArchive />
             {defaultWorkspaces.ALL}
           </button>
           <button
@@ -40,7 +42,6 @@ function SideBar({ tag, setTag, setIsAddWorkspaceMenuOpen }) {
             <MdOutlineHistory />
             {defaultWorkspaces.LAST_SESSION}
           </button>
-          {/* <button onClick={() => setIsAddWorkspaceMenuOpen(true)} className='w-full py-1 bg-[#262831] hover:bg-[#364155] rounded-full cursor-pointer flex items-center justify-center gap-2'><FaPlus /> Add</button> */}
         </div>
       </div>
     </aside>

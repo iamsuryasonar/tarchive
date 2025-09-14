@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { getAllWorkspaces } from "../../../db";
-import { getLastSession } from "../../../services/index";
 
 export const BucketContext = React.createContext(null);
 
 export function BucketProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [workspaces, setWorkspaces] = useState({});
-  const [lastSession, setLastSession] = useState([]);
 
   async function getWorkspaces() {
     setLoading(true);
@@ -16,18 +14,8 @@ export function BucketProvider({ children }) {
     setLoading(false);
   }
 
-  async function getSession() {
-    setLoading(true);
-    let tabs = await getLastSession();
-    console.log("tabs", tabs);
-
-    setLastSession(tabs);
-    setLoading(false);
-  }
-
   useEffect(() => {
     getWorkspaces();
-    getSession();
   }, []);
 
   useEffect(() => {
@@ -40,9 +28,7 @@ export function BucketProvider({ children }) {
   }, []);
 
   return (
-    <BucketContext.Provider
-      value={{ loading, workspaces, lastSession, getWorkspaces }}
-    >
+    <BucketContext.Provider value={{ loading, workspaces, getWorkspaces }}>
       {children}
     </BucketContext.Provider>
   );

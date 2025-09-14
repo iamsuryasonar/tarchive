@@ -54,7 +54,7 @@ export async function addTabsToBucket(tabs, workspace) {
         name: id.slice(0, 8),
         createdAt: new Date().toISOString(),
         tabs: filteredTabs,
-        tag: [workspace],
+        ...(workspace ? { tag: [workspace] } : { tag: [] }),
         isLocked: false,
     };
 
@@ -145,7 +145,8 @@ export async function getAllWorkspaces() {
         });
     });
 
-    workspaces[defaultWorkspaces.ALL] = [...buckets];
+    const allBuckets = buckets.filter(bucket => bucket?.tag?.includes(defaultWorkspaces.LAST_SESSION) === false);
+    workspaces[defaultWorkspaces.ALL] = allBuckets;
 
     return workspaces;
 }
@@ -175,8 +176,10 @@ export async function deleteTab(tabId, bucketId) {
     const store = tx.objectStore(BUCKET_STORE_NAME);
     const req = store.get(bucketId);
 
+
     req.onsuccess = async () => {
         const data = req.result;
+        if (data?.isLocked) return;
         if (data?.tabs?.length === 1) {
             store.delete(bucketId);
             return;
